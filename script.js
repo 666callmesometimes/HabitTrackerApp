@@ -3,36 +3,34 @@ class HabitTracker {
         this.habits = JSON.parse(localStorage.getItem('habits')) || [];
         this.completions = JSON.parse(localStorage.getItem('completions')) || {};
         this.currentView = 'today';
-        this.currentDate = new Date();
         this.calendarDate = new Date();
         this.editingHabitId = null;
+        
+        // Timer dla countdown
+        this.countdownInterval = null;
         
         this.initializeEventListeners();
         this.updateCurrentDate();
         this.renderHabits();
         this.updateStats();
         this.renderCalendar();
+        this.startCountdownTimer();
     }
 
     initializeEventListeners() {
-         // Modal dodawania nawyku
-    document.getElementById('openHabitModal').addEventListener('click', () => {
-        this.openAddHabitModal();
-    });
+        // Modal dodawania nawyku
+        document.getElementById('openHabitModal').addEventListener('click', () => {
+            this.openAddHabitModal();
+        });
 
-    document.getElementById('closeHabitModal').addEventListener('click', () => {
-        this.closeAddHabitModal();
-    });
+        document.getElementById('closeHabitModal').addEventListener('click', () => {
+            this.closeAddHabitModal();
+        });
 
-    document.getElementById('cancelAddHabit').addEventListener('click', () => {
-        this.closeAddHabitModal();
-    });
+        document.getElementById('cancelAddHabit').addEventListener('click', () => {
+            this.closeAddHabitModal();
+        });
 
-    // Formularz dodawania nawyków
-    document.getElementById('habitForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.addHabit();
-    });
         // Formularz dodawania nawyków
         document.getElementById('habitForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -46,7 +44,7 @@ class HabitTracker {
             });
         });
 
-        // Modal
+        // Modal edycji
         document.querySelectorAll('.close').forEach(closeBtn => {
             closeBtn.addEventListener('click', () => {
                 this.closeModals();
@@ -75,76 +73,74 @@ class HabitTracker {
 
         // Zamknij modal po kliknięciu poza nim
         window.addEventListener('click', (e) => {
-    const editModal = document.getElementById('editModal');
-    const detailsModal = document.getElementById('detailsModal');
-    const habitModal = document.getElementById('habitModal');
-    
-    if (e.target === editModal) {
-        this.closeModals();
-    }
-    if (e.target === detailsModal) {
-        this.closeModals();
-    }
-    if (e.target === habitModal) {
-        this.closeAddHabitModal();
-    }
-});
+            const editModal = document.getElementById('editModal');
+            const detailsModal = document.getElementById('detailsModal');
+            const habitModal = document.getElementById('habitModal');
+            
+            if (e.target === editModal) {
+                this.closeModals();
+            }
+            if (e.target === detailsModal) {
+                this.closeModals();
+            }
+            if (e.target === habitModal) {
+                this.closeAddHabitModal();
+            }
+        });
     }
 
-openAddHabitModal() {
-    document.getElementById('habitModal').style.display = 'block';
-    // Wyczyść formularz
-    this.clearForm();
-    // Fokus na pierwszym polu
-    setTimeout(() => {
-        document.getElementById('habitName').focus();
-    }, 100);
-}
+    openAddHabitModal() {
+        document.getElementById('habitModal').style.display = 'block';
+        this.clearForm();
+        setTimeout(() => {
+            document.getElementById('habitName').focus();
+        }, 100);
+    }
 
-closeAddHabitModal() {
-    document.getElementById('habitModal').style.display = 'none';
-    this.clearForm();
-}
+    closeAddHabitModal() {
+        document.getElementById('habitModal').style.display = 'none';
+        this.clearForm();
+    }
 
     addHabit() {
-         const name = document.getElementById('habitName').value.trim();
-    const description = document.getElementById('habitDescription').value.trim();
-    const category = document.getElementById('habitCategory').value;
-    const frequency = document.getElementById('habitFrequency').value;
-    const color = document.getElementById('habitColor').value;
+        const name = document.getElementById('habitName').value.trim();
+        const description = document.getElementById('habitDescription').value.trim();
+        const category = document.getElementById('habitCategory').value;
+        const frequency = document.getElementById('habitFrequency').value;
+        const color = document.getElementById('habitColor').value;
+        
+        // Deadline fields
+        const deadline = document.getElementById('habitDeadline').value;
+        const targetDays = parseInt(document.getElementById('habitTargetDays').value) || null;
+        const deadlineType = document.getElementById('habitDeadlineType').value;
 
-    if (!name) return;
+        if (!name) return;
 
-    const habit = {
-        id: Date.now(),
-        name,
-        description,
-        category,
-        frequency,
-        color,
-        createdAt: this.formatDate(new Date())
-    };
+        const habit = {
+            id: Date.now(),
+            name,
+            description,
+            category,
+            frequency,
+            color,
+            deadline: deadline || null,
+            targetDays: targetDays,
+            deadlineType: deadlineType,
+            createdAt: this.formatDate(new Date())
+        };
 
-    this.habits.push(habit);
-    this.saveData();
-    this.renderHabits();
-    this.updateStats();
-    this.closeAddHabitModal(); // Zamknij modal po dodaniu
-    this.showNotification('Nawyk został dodany!', 'success');
-}
-
-closeModals() {
-    document.getElementById('editModal').style.display = 'none';
-    document.getElementById('detailsModal').style.display = 'none';
-    document.getElementById('habitModal').style.display = 'none'; // Dodaj to
-    this.editingHabitId = null;
-}
+        this.habits.push(habit);
+        this.saveData();
+        this.renderHabits();
+        this.updateStats();
+        this.closeAddHabitModal();
+        this.showNotification('Nawyk został dodany!', 'success');
+    }
 
     deleteHabit(id) {
         if (confirm('Czy na pewno chcesz usunąć ten nawyk? Wszystkie dane zostaną utracone.')) {
             this.habits = this.habits.filter(habit => habit.id !== id);
             
-            // Usuń wszystkie ukończenia tego nawyku
             Object.keys(this.completions).forEach(date => {
                 if (this.completions[date][id]) {
                     delete this.completions[date][id];
@@ -163,7 +159,7 @@ closeModals() {
     }
 
     toggleHabitCompletion(id, date = null) {
-        const targetDate = date || this.formatDate(this.currentDate);
+        const targetDate = date || this.formatDate(new Date());
         
         if (!this.completions[targetDate]) {
             this.completions[targetDate] = {};
@@ -171,7 +167,6 @@ closeModals() {
         
         this.completions[targetDate][id] = !this.completions[targetDate][id];
         
-        // Usuń datę jeśli nie ma żadnych ukończonych nawyków
         if (Object.values(this.completions[targetDate]).every(completed => !completed)) {
             delete this.completions[targetDate];
         }
@@ -198,6 +193,11 @@ closeModals() {
             document.getElementById('editHabitFrequency').value = habit.frequency;
             document.getElementById('editHabitColor').value = habit.color;
             
+            // Deadline fields
+            document.getElementById('editHabitDeadline').value = habit.deadline || '';
+            document.getElementById('editHabitTargetDays').value = habit.targetDays || '';
+            document.getElementById('editHabitDeadlineType').value = habit.deadlineType || 'none';
+            
             document.getElementById('editModal').style.display = 'block';
         }
     }
@@ -211,6 +211,11 @@ closeModals() {
             habit.frequency = document.getElementById('editHabitFrequency').value;
             habit.color = document.getElementById('editHabitColor').value;
             
+            // Deadline fields
+            habit.deadline = document.getElementById('editHabitDeadline').value || null;
+            habit.targetDays = parseInt(document.getElementById('editHabitTargetDays').value) || null;
+            habit.deadlineType = document.getElementById('editHabitDeadlineType').value;
+            
             this.saveData();
             this.renderHabits();
             this.closeModals();
@@ -223,6 +228,7 @@ closeModals() {
         if (!habit) return;
 
         const stats = this.getHabitStats(id);
+        const countdown = this.calculateCountdown(habit);
         const modal = document.getElementById('detailsModal');
         const title = document.getElementById('detailsTitle');
         const content = document.getElementById('detailsContent');
@@ -236,6 +242,16 @@ closeModals() {
                 <p><strong>Częstotliwość:</strong> ${this.getFrequencyLabel(habit.frequency)}</p>
                 <p><strong>Data utworzenia:</strong> ${new Date(habit.createdAt).toLocaleDateString('pl-PL')}</p>
                 ${habit.description ? `<p><strong>Opis:</strong> ${habit.description}</p>` : ''}
+                ${countdown.hasDeadline ? `
+                    <p><strong>Deadline:</strong> ${countdown.message}</p>
+                    ${countdown.progress > 0 ? `
+                        <div class="deadline-progress">
+                            <div class="deadline-progress-bar">
+                                <div class="deadline-progress-fill ${countdown.status}" style="width: ${countdown.progress}%"></div>
+                            </div>
+                        </div>
+                    ` : ''}
+                ` : ''}
             </div>
             
             <div style="margin-bottom: 20px;">
@@ -274,16 +290,145 @@ closeModals() {
         modal.style.display = 'block';
     }
 
+    // Funkcje countdown i deadline
+    calculateCountdown(habit) {
+        const now = new Date();
+        const created = new Date(habit.createdAt);
+        const stats = this.getHabitStats(habit.id);
+        
+        let result = {
+            hasDeadline: false,
+            timeLeft: null,
+            daysLeft: null,
+            progress: 0,
+            status: 'normal',
+            message: '',
+            showCountdown: false
+        };
+
+        if (habit.deadlineType === 'none' || habit.deadlineType === undefined) {
+            return result;
+        }
+
+        result.hasDeadline = true;
+
+        // Deadline do konkretnej daty
+        if ((habit.deadlineType === 'date' || habit.deadlineType === 'both') && habit.deadline) {
+            const deadlineDate = new Date(habit.deadline);
+            const timeDiff = deadlineDate - now;
+            const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+            
+            result.daysLeft = daysDiff;
+            result.timeLeft = timeDiff;
+            result.showCountdown = true;
+            
+            if (daysDiff < 0) {
+                result.status = 'expired';
+                result.message = 'Deadline minął!';
+            } else if (daysDiff <= 3) {
+                result.status = 'danger';
+                result.message = `Zostało ${daysDiff} dni!`;
+            } else if (daysDiff <= 7) {
+                result.status = 'warning';
+                result.message = `Zostało ${daysDiff} dni`;
+            } else {
+                result.status = 'normal';
+                result.message = `Zostało ${daysDiff} dni`;
+            }
+            
+            const totalDays = Math.ceil((deadlineDate - created) / (1000 * 60 * 60 * 24));
+            const passedDays = totalDays - daysDiff;
+            result.progress = Math.max(0, Math.min(100, (passedDays / totalDays) * 100));
+        }
+
+        // Cel serii dni
+        if ((habit.deadlineType === 'streak' || habit.deadlineType === 'both') && habit.targetDays) {
+            const currentStreak = stats.currentStreak;
+            const target = habit.targetDays;
+            
+            if (currentStreak >= target) {
+                result.status = 'success';
+                result.message = `Cel osiągnięty! ${currentStreak}/${target} dni`;
+            } else {
+                const remaining = target - currentStreak;
+                result.message = `${currentStreak}/${target} dni (zostało ${remaining})`;
+                
+                const streakProgress = (currentStreak / target) * 100;
+                if (habit.deadlineType === 'streak') {
+                    result.progress = streakProgress;
+                } else {
+                    result.progress = (result.progress + streakProgress) / 2;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    formatCountdown(timeLeft) {
+        if (timeLeft <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+        
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        return { days, hours, minutes, seconds };
+    }
+
+    startCountdownTimer() {
+        this.countdownInterval = setInterval(() => {
+            this.updateCountdownDisplays();
+        }, 1000);
+    }
+
+    updateCountdownDisplays() {
+        document.querySelectorAll('.countdown-timer').forEach(timer => {
+            const habitId = parseInt(timer.dataset.habitId);
+            const habit = this.habits.find(h => h.id === habitId);
+            
+            if (habit) {
+                const countdown = this.calculateCountdown(habit);
+                if (countdown.showCountdown && countdown.timeLeft > 0) {
+                    const time = this.formatCountdown(countdown.timeLeft);
+                    timer.innerHTML = this.createCountdownHTML(time, countdown.message);
+                }
+            }
+        });
+    }
+
+    createCountdownHTML(time, message) {
+        return `
+            <div>${message}</div>
+            <div class="countdown-numbers">
+                <div class="countdown-unit">
+                    <div class="number">${time.days}</div>
+                    <div class="label">dni</div>
+                </div>
+                <div class="countdown-unit">
+                    <div class="number">${time.hours}</div>
+                    <div class="label">godz</div>
+                </div>
+                <div class="countdown-unit">
+                    <div class="number">${time.minutes}</div>
+                    <div class="label">min</div>
+                </div>
+                <div class="countdown-unit">
+                    <div class="number">${time.seconds}</div>
+                    <div class="label">sek</div>
+                </div>
+            </div>
+        `;
+    }
+
     switchView(view) {
         this.currentView = view;
         
-        // Aktualizuj przyciski
         document.querySelectorAll('.toggle-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         document.querySelector(`[data-view="${view}"]`).classList.add('active');
         
-        // Pokaż odpowiedni widok
         document.querySelectorAll('.view-content').forEach(content => {
             content.classList.remove('active');
         });
@@ -309,7 +454,7 @@ closeModals() {
         container.style.display = 'block';
         emptyState.style.display = 'none';
         
-        const today = this.formatDate(this.currentDate);
+        const today = this.formatDate(new Date());
         
         container.innerHTML = this.habits.map(habit => {
             const isCompleted = this.completions[today] && this.completions[today][habit.id];
@@ -343,6 +488,8 @@ closeModals() {
             other: 'fas fa-star'
         };
 
+        const countdown = this.calculateCountdown(habit);
+
         return `
             <div class="habit-item ${isCompleted ? 'completed' : ''}" 
                  data-habit-id="${habit.id}" 
@@ -358,6 +505,12 @@ closeModals() {
                             <div class="streak-indicator">
                                 <i class="fas fa-fire"></i>
                                 ${stats.currentStreak} dni z rzędu
+                            </div>
+                        ` : ''}
+                        ${countdown.hasDeadline ? `
+                            <div class="deadline-badge ${countdown.status}">
+                                <i class="fas fa-clock"></i>
+                                ${countdown.message}
                             </div>
                         ` : ''}
                     </div>
@@ -383,6 +536,20 @@ closeModals() {
                 </div>
                 
                 ${habit.description ? `<p style="margin: 10px 0; color: #666; font-style: italic;">${habit.description}</p>` : ''}
+                
+                ${countdown.hasDeadline && countdown.progress > 0 ? `
+                    <div class="deadline-progress">
+                        <div class="deadline-progress-bar">
+                            <div class="deadline-progress-fill ${countdown.status}" style="width: ${countdown.progress}%"></div>
+                        </div>
+                    </div>
+                ` : ''}
+                
+                ${countdown.showCountdown && countdown.timeLeft > 0 ? `
+                    <div class="countdown-timer ${countdown.status}" data-habit-id="${habit.id}">
+                        ${this.createCountdownHTML(this.formatCountdown(countdown.timeLeft), countdown.message)}
+                    </div>
+                ` : ''}
                 
                 <div class="habit-stats">
                     <div class="habit-stat">
@@ -443,19 +610,16 @@ closeModals() {
         });
         
         const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
         const startDate = new Date(firstDay);
-        startDate.setDate(startDate.getDate() - firstDay.getDay() + 1); // Poniedziałek
+        startDate.setDate(startDate.getDate() - firstDay.getDay() + 1);
         
         const days = ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nie'];
         let calendarHTML = '';
         
-        // Nagłówki dni
         days.forEach(day => {
             calendarHTML += `<div class="calendar-day header">${day}</div>`;
         });
         
-        // Dni miesiąca
         const currentDate = new Date(startDate);
         for (let i = 0; i < 42; i++) {
             const dateStr = this.formatDate(currentDate);
@@ -506,7 +670,6 @@ closeModals() {
         let longestStreak = 0;
         let tempStreak = 0;
         
-        // Policz ukończenia i serie
         const sortedDates = Object.keys(this.completions).sort();
         
         for (const dateStr of sortedDates) {
@@ -519,7 +682,6 @@ closeModals() {
             }
         }
         
-        // Aktualna seria (od dzisiaj wstecz)
         const currentDate = new Date();
         while (currentDate >= createdDate) {
             const dateStr = this.formatDate(currentDate);
@@ -531,7 +693,6 @@ closeModals() {
             currentDate.setDate(currentDate.getDate() - 1);
         }
         
-        // Statystyki ostatnich 30 dni
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         
@@ -539,7 +700,7 @@ closeModals() {
         let last30DaysPossible = 0;
         
         const checkDate = new Date(Math.max(thirtyDaysAgo, createdDate));
-        while (checkDate <= today) {
+        while (checkDate <= today) { // Poprawka: używamy 'today' zamiast 'currentDate'
             const dateStr = this.formatDate(checkDate);
             last30DaysPossible++;
             if (this.completions[dateStr] && this.completions[dateStr][habitId]) {
@@ -560,7 +721,7 @@ closeModals() {
     }
 
     updateStats() {
-        const today = this.formatDate(this.currentDate);
+        const today = this.formatDate(new Date());
         const todayCompletions = this.completions[today] || {};
         const completedToday = Object.values(todayCompletions).filter(Boolean).length;
         
@@ -590,7 +751,7 @@ closeModals() {
             day: 'numeric' 
         };
         document.getElementById('currentDate').textContent = 
-            this.currentDate.toLocaleDateString('pl-PL', options);
+            new Date().toLocaleDateString('pl-PL', options);
     }
 
     getCategoryLabel(category) {
@@ -616,18 +777,20 @@ closeModals() {
     }
 
     formatDate(date) {
-        return date.toISOString().split('T')[0];
+        return date.toISOString().split('T')[0]; // Poprawka: dodano [0] aby zwrócić tylko datę
     }
 
     closeModals() {
         document.getElementById('editModal').style.display = 'none';
         document.getElementById('detailsModal').style.display = 'none';
+        document.getElementById('habitModal').style.display = 'none';
         this.editingHabitId = null;
     }
 
     clearForm() {
         document.getElementById('habitForm').reset();
         document.getElementById('habitColor').value = '#667eea';
+        document.getElementById('habitDeadlineType').value = 'none';
     }
 
     saveData() {
@@ -669,10 +832,43 @@ closeModals() {
             }, 300);
         }, 3000);
     }
+
+    destroy() {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+        }
+    }
 }
 
 // Inicjalizacja aplikacji
 document.addEventListener('DOMContentLoaded', () => {
-    new HabitTracker();
+    window.habitTracker = new HabitTracker();
+    
+    // Auto-save co 30 sekund
+    setInterval(() => {
+        if (window.habitTracker) {
+            window.habitTracker.saveData();
+        }
+    }, 30000);
+    
+    if (window.habitTracker.habits.length === 0) {
+        setTimeout(() => {
+            window.habitTracker.showNotification('Witaj! Kliknij "Dodaj Nowy Nawyk" aby zacząć.', 'info');
+        }, 2000);
+    }
 });
 
+// Obsługa błędów
+window.addEventListener('error', (e) => {
+    console.error('Błąd aplikacji:', e.error);
+    if (window.habitTracker) {
+        window.habitTracker.showNotification('Wystąpił błąd aplikacji. Sprawdź konsolę.', 'error');
+    }
+});
+
+// Cleanup przy zamknięciu strony
+window.addEventListener('beforeunload', () => {
+    if (window.habitTracker) {
+        window.habitTracker.destroy();
+    }
+});

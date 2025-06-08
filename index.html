@@ -6,7 +6,7 @@
     <title>Habit Tracker - Śledzenie Nawyków</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="shortcut icon" href="img/icon.png" type="image/x-icon">k
+    <link rel="shortcut icon" href="img/icon.png" type="image/x-icon">
 </head>
 <body>
     <div class="container">
@@ -156,6 +156,29 @@
                         <input type="color" id="habitColor" value="#667eea" title="Kolor nawyku">
                     </div>
                 </div>
+                <!-- Sekcja deadline -->
+                <div class="deadline-section">
+                    <h4>Cel Czasowy (opcjonalnie)</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <select id="habitDeadlineType">
+                                <option value="none">Bez deadline</option>
+                                <option value="date">Do konkretnej daty</option>
+                                <option value="streak">Osiągnij X dni z rzędu</option>
+                                <option value="both">Data + seria dni</option>
+                            </select>
+                            <label for="habitDeadlineType">Typ celu</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="date" id="habitDeadline" title="Data deadline">
+                            <label for="habitDeadline">Deadline</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" id="habitTargetDays" min="1" max="365" placeholder="30">
+                            <label for="habitTargetDays">Cel (dni z rzędu)</label>
+                        </div>
+                    </div>
+                </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" id="cancelAddHabit">Anuluj</button>
                     <button type="submit" class="btn btn-primary">
@@ -201,6 +224,29 @@
                     </div>
                     <div class="form-group">
                         <input type="color" id="editHabitColor" title="Kolor nawyku">
+                    </div>
+                </div>
+                <!-- Sekcja deadline w edycji -->
+                <div class="deadline-section">
+                    <h4>Cel Czasowy (opcjonalnie)</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <select id="editHabitDeadlineType">
+                                <option value="none">Bez deadline</option>
+                                <option value="date">Do konkretnej daty</option>
+                                <option value="streak">Osiągnij X dni z rzędu</option>
+                                <option value="both">Data + seria dni</option>
+                            </select>
+                            <label for="editHabitDeadlineType">Typ celu</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="date" id="editHabitDeadline" title="Data deadline">
+                            <label for="editHabitDeadline">Deadline</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" id="editHabitTargetDays" min="1" max="365" placeholder="30">
+                            <label for="editHabitTargetDays">Cel (dni z rzędu)</label>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-actions">
