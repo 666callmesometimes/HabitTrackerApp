@@ -6,7 +6,7 @@
     <title>Habit Tracker - Śledzenie Nawyków</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="shortcut icon" href="img/icon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="img/icon.png" type="image/x-icon">k
 </head>
 <body>
     <div class="container">
@@ -17,43 +17,11 @@
         </header>
 
         <main class="main-content">
-            <!-- Sekcja dodawania nawyków -->
+            <!-- Przycisk dodawania nawyku -->
             <section class="add-habit-section">
-                <h2>Dodaj Nowy Nawyk</h2>
-                <form id="habitForm" class="habit-form">
-                    <div class="form-group">
-                        <input type="text" id="habitName" placeholder="Nazwa nawyku (np. Pić 2L wody)" required>
-                    </div>
-                    <div class="form-group">
-                        <textarea id="habitDescription" placeholder="Opis nawyku (opcjonalnie)"></textarea>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <select id="habitCategory">
-                                <option value="health">Zdrowie</option>
-                                <option value="fitness">Fitness</option>
-                                <option value="learning">Nauka</option>
-                                <option value="productivity">Produktywność</option>
-                                <option value="mindfulness">Mindfulness</option>
-                                <option value="social">Relacje społeczne</option>
-                                <option value="other">Inne</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <select id="habitFrequency">
-                                <option value="daily">Codziennie</option>
-                                <option value="weekly">Raz w tygodniu</option>
-                                <option value="custom">Niestandardowe</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <input type="color" id="habitColor" value="#667eea" title="Kolor nawyku">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Dodaj Nawyk
-                    </button>
-                </form>
+                <button id="openHabitModal" class="btn btn-primary btn-large">
+                    <i class="fas fa-plus"></i> Dodaj Nowy Nawyk
+                </button>
             </section>
 
             <!-- Statystyki ogólne -->
@@ -145,10 +113,57 @@
                 <div id="emptyState" class="empty-state">
                     <i class="fas fa-seedling"></i>
                     <h3>Brak nawyków</h3>
-                    <p>Dodaj swój pierwszy nawyk powyżej</p>
+                    <p>Kliknij przycisk "Dodaj Nowy Nawyk" powyżej</p>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Modal dodawania nawyku -->
+    <div id="habitModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Dodaj Nowy Nawyk</h3>
+                <span class="close" id="closeHabitModal">&times;</span>
+            </div>
+            <form id="habitForm" class="habit-form">
+                <div class="form-group">
+                    <input type="text" id="habitName" placeholder="Nazwa nawyku (np. Pić 2L wody)" required>
+                </div>
+                <div class="form-group">
+                    <textarea id="habitDescription" placeholder="Opis nawyku (opcjonalnie)"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <select id="habitCategory">
+                            <option value="health">Zdrowie</option>
+                            <option value="fitness">Fitness</option>
+                            <option value="learning">Nauka</option>
+                            <option value="productivity">Produktywność</option>
+                            <option value="mindfulness">Mindfulness</option>
+                            <option value="social">Relacje społeczne</option>
+                            <option value="other">Inne</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="habitFrequency">
+                            <option value="daily">Codziennie</option>
+                            <option value="weekly">Raz w tygodniu</option>
+                            <option value="custom">Niestandardowe</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="color" id="habitColor" value="#667eea" title="Kolor nawyku">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelAddHabit">Anuluj</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Dodaj Nawyk
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Modal edycji nawyku -->

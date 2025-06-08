@@ -630,3 +630,86 @@ body {
 .streak-indicator i {
     color: #ffd700;
 }
+/* Przycisk dodawania nawyku */
+.add-habit-section {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #f0f0f0;
+    text-align: center;
+}
+
+.btn-large {
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.btn-large:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+/* Modal dla dodawania nawyku */
+#habitModal .modal-content {
+    max-width: 600px;
+}
+
+#habitModal .habit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#habitModal .form-row {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 15px;
+}
+
+#habitModal .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* Animacja modal */
+.modal {
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsywność modal */
+@media (max-width: 768px) {
+    #habitModal .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    #habitModal .modal-actions {
+        flex-direction: column;
+    }
+    
+    .btn-large {
+        padding: 12px 24px;
+        font-size: 16px;
+    }
+}

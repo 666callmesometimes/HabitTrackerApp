@@ -15,6 +15,24 @@ class HabitTracker {
     }
 
     initializeEventListeners() {
+         // Modal dodawania nawyku
+    document.getElementById('openHabitModal').addEventListener('click', () => {
+        this.openAddHabitModal();
+    });
+
+    document.getElementById('closeHabitModal').addEventListener('click', () => {
+        this.closeAddHabitModal();
+    });
+
+    document.getElementById('cancelAddHabit').addEventListener('click', () => {
+        this.closeAddHabitModal();
+    });
+
+    // Formularz dodawania nawyków
+    document.getElementById('habitForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.addHabit();
+    });
         // Formularz dodawania nawyków
         document.getElementById('habitForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -57,38 +75,70 @@ class HabitTracker {
 
         // Zamknij modal po kliknięciu poza nim
         window.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                this.closeModals();
-            }
-        });
+    const editModal = document.getElementById('editModal');
+    const detailsModal = document.getElementById('detailsModal');
+    const habitModal = document.getElementById('habitModal');
+    
+    if (e.target === editModal) {
+        this.closeModals();
     }
+    if (e.target === detailsModal) {
+        this.closeModals();
+    }
+    if (e.target === habitModal) {
+        this.closeAddHabitModal();
+    }
+});
+    }
+
+openAddHabitModal() {
+    document.getElementById('habitModal').style.display = 'block';
+    // Wyczyść formularz
+    this.clearForm();
+    // Fokus na pierwszym polu
+    setTimeout(() => {
+        document.getElementById('habitName').focus();
+    }, 100);
+}
+
+closeAddHabitModal() {
+    document.getElementById('habitModal').style.display = 'none';
+    this.clearForm();
+}
 
     addHabit() {
-        const name = document.getElementById('habitName').value.trim();
-        const description = document.getElementById('habitDescription').value.trim();
-        const category = document.getElementById('habitCategory').value;
-        const frequency = document.getElementById('habitFrequency').value;
-        const color = document.getElementById('habitColor').value;
+         const name = document.getElementById('habitName').value.trim();
+    const description = document.getElementById('habitDescription').value.trim();
+    const category = document.getElementById('habitCategory').value;
+    const frequency = document.getElementById('habitFrequency').value;
+    const color = document.getElementById('habitColor').value;
 
-        if (!name) return;
+    if (!name) return;
 
-        const habit = {
-            id: Date.now(),
-            name,
-            description,
-            category,
-            frequency,
-            color,
-            createdAt: new Date().toISOString().split('T')[0]
-        };
+    const habit = {
+        id: Date.now(),
+        name,
+        description,
+        category,
+        frequency,
+        color,
+        createdAt: this.formatDate(new Date())
+    };
 
-        this.habits.push(habit);
-        this.saveData();
-        this.renderHabits();
-        this.updateStats();
-        this.clearForm();
-        this.showNotification('Nawyk został dodany!', 'success');
-    }
+    this.habits.push(habit);
+    this.saveData();
+    this.renderHabits();
+    this.updateStats();
+    this.closeAddHabitModal(); // Zamknij modal po dodaniu
+    this.showNotification('Nawyk został dodany!', 'success');
+}
+
+closeModals() {
+    document.getElementById('editModal').style.display = 'none';
+    document.getElementById('detailsModal').style.display = 'none';
+    document.getElementById('habitModal').style.display = 'none'; // Dodaj to
+    this.editingHabitId = null;
+}
 
     deleteHabit(id) {
         if (confirm('Czy na pewno chcesz usunąć ten nawyk? Wszystkie dane zostaną utracone.')) {
@@ -625,3 +675,4 @@ class HabitTracker {
 document.addEventListener('DOMContentLoaded', () => {
     new HabitTracker();
 });
+
