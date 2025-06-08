@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker - Śledzenie Nawyków</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-chart-line"></i> Habit Tracker</h1>
+            <p>Buduj lepsze nawyki każdego dnia</p>
+            <div class="current-date" id="currentDate"></div>
+        </header>
+
+        <main class="main-content">
+            <!-- Sekcja dodawania nawyków -->
+            <section class="add-habit-section">
+                <h2>Dodaj Nowy Nawyk</h2>
+                <form id="habitForm" class="habit-form">
+                    <div class="form-group">
+                        <input type="text" id="habitName" placeholder="Nazwa nawyku (np. Pić 2L wody)" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="habitDescription" placeholder="Opis nawyku (opcjonalnie)"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <select id="habitCategory">
+                                <option value="health">Zdrowie</option>
+                                <option value="fitness">Fitness</option>
+                                <option value="learning">Nauka</option>
+                                <option value="productivity">Produktywność</option>
+                                <option value="mindfulness">Mindfulness</option>
+                                <option value="social">Relacje społeczne</option>
+                                <option value="other">Inne</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select id="habitFrequency">
+                                <option value="daily">Codziennie</option>
+                                <option value="weekly">Raz w tygodniu</option>
+                                <option value="custom">Niestandardowe</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="color" id="habitColor" value="#667eea" title="Kolor nawyku">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Dodaj Nawyk
+                    </button>
+                </form>
+            </section>
+
+            <!-- Statystyki ogólne -->
+            <section class="stats-section">
+                <h2>Dzisiejsze Statystyki</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="todayCompleted">0</div>
+                            <div class="stat-label">Ukończone dziś</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="longestStreak">0</div>
+                            <div class="stat-label">Najdłuższa seria</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="completionRate">0%</div>
+                            <div class="stat-label">Wskaźnik ukończenia</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="totalHabits">0</div>
+                            <div class="stat-label">Wszystkie nawyki</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista nawyków -->
+            <section class="habits-section">
+                <div class="habits-header">
+                    <h2>Moje Nawyki</h2>
+                    <div class="view-toggle">
+                        <button class="toggle-btn active" data-view="today">Dzisiaj</button>
+                        <button class="toggle-btn" data-view="all">Wszystkie</button>
+                        <button class="toggle-btn" data-view="calendar">Kalendarz</button>
+                    </div>
+                </div>
+
+                <!-- Widok dzisiejszy -->
+                <div id="todayView" class="view-content active">
+                    <div id="habitsList" class="habits-list">
+                        <!-- Nawyki będą dodawane dynamicznie -->
+                    </div>
+                </div>
+
+                <!-- Widok wszystkich nawyków -->
+                <div id="allView" class="view-content">
+                    <div id="allHabitsList" class="habits-list">
+                        <!-- Wszystkie nawyki -->
+                    </div>
+                </div>
+
+                <!-- Widok kalendarza -->
+                <div id="calendarView" class="view-content">
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <button id="prevMonth" class="calendar-nav">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <h3 id="calendarTitle"></h3>
+                            <button id="nextMonth" class="calendar-nav">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div id="calendar" class="calendar-grid">
+                            <!-- Kalendarz będzie generowany dynamicznie -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="emptyState" class="empty-state">
+                    <i class="fas fa-seedling"></i>
+                    <h3>Brak nawyków</h3>
+                    <p>Dodaj swój pierwszy nawyk powyżej</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal edycji nawyku -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edytuj Nawyk</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="editHabitForm">
+                <div class="form-group">
+                    <input type="text" id="editHabitName" placeholder="Nazwa nawyku" required>
+                </div>
+                <div class="form-group">
+                    <textarea id="editHabitDescription" placeholder="Opis nawyku"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <select id="editHabitCategory">
+                            <option value="health">Zdrowie</option>
+                            <option value="fitness">Fitness</option>
+                            <option value="learning">Nauka</option>
+                            <option value="productivity">Produktywność</option>
+                            <option value="mindfulness">Mindfulness</option>
+                            <option value="social">Relacje społeczne</option>
+                            <option value="other">Inne</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="editHabitFrequency">
+                            <option value="daily">Codziennie</option>
+                            <option value="weekly">Raz w tygodniu</option>
+                            <option value="custom">Niestandardowe</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="color" id="editHabitColor" title="Kolor nawyku">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelEdit">Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Zapisz Zmiany</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal szczegółów nawyku -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="detailsTitle">Szczegóły Nawyku</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div id="detailsContent" class="details-content">
+                <!-- Szczegóły będą dodawane dynamicznie -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
